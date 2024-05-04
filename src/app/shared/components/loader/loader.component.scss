@@ -1,0 +1,38 @@
+@import '_variables';
+
+.carregando{
+    position: absolute;
+    display: block;
+    left: 25px;
+    top: 12px;
+    animation: rotate 1s linear infinite;
+    background: transparent;
+}
+
+.loading{
+  font-size: 4rem;
+  left: 45% !important;
+  top: 45% !important;
+  color: $primary !important;
+}
+
+@keyframes outline {
+	0% {
+		stroke-dashoffset: 0;
+	}
+	50% {
+		stroke-dashoffset: 300;
+	}
+	100% {
+		stroke-dashoffset: 600;
+	}
+}
+
+@keyframes rotate {
+	from {
+		transform: rotate(0turn);
+	}
+	to {
+		transform: rotate(-1turn);
+	}
+}

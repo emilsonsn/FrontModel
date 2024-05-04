@@ -1,0 +1,77 @@
+def commit_id = ""
+def discord_key = ""
+def describe_commit = ""
+def author_commit = ""
+
+def GIT_BRANCH
+def IMAGE_TAG_SUFIX
+
+pipeline
+{
+    agent any
+
+    environment
+    {
+        DOCKER_ID = credentials('DOCKER_ID')
+        DOCKER_PASSWORD = credentials('DOCKER_PASSWORD')
+    }
+
+    stages 
+    {
+        stage('Checkout') 
+        {
+            steps
+            {
+                echo 'Initializing...'
+                echo 'Git Checkout...'
+                script 
+                {           
+                    def REPOS_CHECKOUT = checkout scm
+                    GIT_BRANCH = (REPOS_CHECKOUT.GIT_BRANCH == "origin/main") ? "main" : "dev"  
+
+                    sh "git rev-parse --short HEAD > .commit"
+                    commit_id = readFile('.commit').replace("\n", "").replace("\r", "")
+                    describe_commit = sh( script: "git log --format=%B -n 1 ${commit_id}",returnStdout: true).trim()
+                    author_commit = sh( script: "git log --format=%an -n 1 ${commit_id}",returnStdout: true).trim()
+                    sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_ID --password-stdin"
+
+                    IMAGE_TAG_SUFIX = (GIT_BRANCH == "main") ? "" : "-RC"
+                }
+            }
+        }
+        stage('Docker build') 
+        {
+            steps 
+            {
+                echo 'Build API for Amd64...'
+
+                script 
+                {
+                    def ENV_CONFIGURATION = (GIT_BRANCH == "main") ? "prod" : "dev"
+                    sh "docker buildx build --platform linux/amd64 -t jarbson/logame-manager-amd64:${commit_id}${IMAGE_TAG_SUFIX} --build-arg ENV_CONFIGURATION=${ENV_CONFIGURATION} ."
+                    sh "docker buildx build --platform linux/amd64 -t jarbson/xsa-manager-amd64:${commit_id}${IMAGE_TAG_SUFIX} --build-arg ENV_CONFIGURATION=prod-xsa ."
+                }
+            }
+        }
+        stage('Docker push') 
+        {
+            steps 
+            {
+                echo 'Push API for Amd64...'
+
+                script 
+                {         
+                    // LOGAME           
+                    sh "docker push jarbson/logame-manager-amd64:${commit_id}${IMAGE_TAG_SUFIX}"
+                    sh "docker tag jarbson/logame-manager-amd64:${commit_id}${IMAGE_TAG_SUFIX} jarbson/logame-manager-amd64:latest${IMAGE_TAG_SUFIX}"
+                    sh "docker push jarbson/logame-manager-amd64:latest${IMAGE_TAG_SUFIX}"
+
+                    // XSA
+                    sh "docker push jarbson/xsa-manager-amd64:${commit_id}${IMAGE_TAG_SUFIX}"
+                    sh "docker tag jarbson/xsa-manager-amd64:${commit_id}${IMAGE_TAG_SUFIX} jarbson/xsa-manager-amd64:latest${IMAGE_TAG_SUFIX}"
+                    sh "docker push jarbson/xsa-manager-amd64:latest${IMAGE_TAG_SUFIX}"
+                }
+            }
+        }
+    }
+}

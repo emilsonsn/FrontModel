@@ -1,0 +1,119 @@
+podTemplate(
+    cloud: "kubernetes_officecom_app_br_cluster",
+    serviceAccount: "jenkins-officecom-sa",
+    containers: [
+        containerTemplate(args: 'cat', command: '/bin/sh -c', image: 'lachlanevenson/k8s-helm:v3.10.2', name: 'helm-container', ttyEnabled: true)
+    ],
+    envVars: [
+        envVar(key: 'TZ', value: 'America/Sao_Paulo')
+    ]
+)
+{
+    def DISCORD_KEY
+    def GIT_BRANCH
+    def GIT_COMMIT_HASH
+    def GIT_COMMIT_AUTHOR
+    def GIT_COMMIT_MESSAGE
+
+    def DOCKER_IMAGE_VERSION
+    def BRANCH
+
+    def applyDeploy = { project ->
+
+        def setParams = "--set image.repository=jarbson/${project}-manager-amd64 --set image.tag=${DOCKER_IMAGE_VERSION}"
+        def K8S_NAMESPACE
+        def RELEASE_NAME
+
+        if (project == 'logame')
+        {
+            K8S_NAMESPACE = (BRANCH == "main") ? "logame-manager" : "logame-manager-dev"
+            RELEASE_NAME = (BRANCH == "main") ? "logame-manager" : "logame-manager-dev"
+        }
+        else
+        {
+            K8S_NAMESPACE = "xsa-manager"
+            RELEASE_NAME = "xsa-manager"
+
+            // --set nameOverride=xsa-manager 
+            setParams += " --set ingressRoute.host=xsa-manager.officecom.app --set ingressRoute.hostDev=xsa-manager.officecom.app --set ingressRoute.tls.secretName=xsa-manager-secret"
+        }
+
+        setParams += " --set deployEnv=${BRANCH}"
+
+        try
+        {
+            sh """
+                helm upgrade -f ./k8s/helm/logame-manager/values.yaml ${RELEASE_NAME} ./logame-manager-1.0.0.tgz \
+                    -n ${K8S_NAMESPACE} \
+                    ${setParams}
+            """
+        }
+        catch (Exception e)
+        {
+            sh """
+                helm install -f ./k8s/helm/logame-manager/values.yaml ${RELEASE_NAME} ./logame-manager-1.0.0.tgz \
+                    -n ${K8S_NAMESPACE} \
+                    --create-namespace \
+                    ${setParams}
+            """
+        }
+
+    }
+
+    node(POD_LABEL)
+    {
+        stage('Checkout')
+        {
+            echo 'Iniciando clone do repositório...'
+
+            def REPOS_CHECKOUT = checkout scm
+            GIT_BRANCH = REPOS_CHECKOUT.GIT_BRANCH
+            GIT_COMMIT_HASH = REPOS_CHECKOUT.GIT_COMMIT
+            BRANCH = (GIT_BRANCH == "origin/main") ? "main" : "dev"
+            def IMAGE_TAG_SUFIX = (BRANCH == "main") ? "" : "-RC"
+            DOCKER_IMAGE_VERSION = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+            DOCKER_IMAGE_VERSION += IMAGE_TAG_SUFIX
+            GIT_COMMIT_AUTHOR = sh(script: "git log --format=%an -n 1 ${REPOS_CHECKOUT.GIT_COMMIT}", returnStdout: true).trim()
+            GIT_COMMIT_MESSAGE = sh(script: "git log --format=%B -n 1 ${REPOS_CHECKOUT.GIT_COMMIT} | sed -E 's/\$/\\n/g' | tr -d '\n' | sed 's/..\$//'", returnStdout: true).trim()
+        }
+        stage('Deploy')
+        {
+            echo 'Iniciando deploy com Helm...'
+
+            withCredentials([
+                [
+                    $class: 'StringBinding',
+                    credentialsId: 'DISCORD_SECRET',
+                    variable: 'DISCORD_SECRET'
+                ]
+            ]) 
+            {
+                DISCORD_KEY = sh(script: 'echo $(echo -n "${DISCORD_SECRET}$(date +%Y%m%d%H)" | md5sum | sed -En "s/ //p" | sed -En "s/ -//p")', returnStdout: true).trim()
+            }
+
+            container('helm-container')
+            {
+                sh """
+                    helm package ./k8s/helm/logame-manager --app-version ${DOCKER_IMAGE_VERSION}
+                    helm repo index .
+                """
+
+                applyDeploy("logame")
+                
+                if (BRANCH == "main")
+                {
+                    applyDeploy("xsa")
+                }
+            }
+
+            //🔄•atualizações
+            sh """
+                curl POST discord.officecom.host/message \
+                -H 'Accept: application/json' \
+                -H 'Content-Type: application/json' \
+                -H 'Authorization: Basic ${DISCORD_KEY}' \
+                -d '{\"thumbnail\":\"https://github.com/jarbsonsantana/setup/assets/32847584/0166fb1a-52c8-4f2b-95b7-8088ecbae56d\",\"title\": \"XSA - BR: Logame Manager v2 (${BRANCH}) - Nova versão ${DOCKER_IMAGE_VERSION}\",\"authorName\": \"${GIT_COMMIT_AUTHOR}\",\"content\": \"${GIT_COMMIT_MESSAGE}\",\"footer\": \"CI/CD Officecom\",\"footerIcon\": \"https://github.com/jarbsonsantana/setup/assets/32847584/0166fb1a-52c8-4f2b-95b7-8088ecbae56d\",\"channels\":[\"1108400720987815968\"]}'
+            """
+        }
+    }
+}

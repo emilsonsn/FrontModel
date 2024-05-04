@@ -1,0 +1,45 @@
+<header id="main-header">
+  <div class="menu-toggle" (click)="toggleSidebar()">
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+  <div class="logo">
+    <a [routerLink]="['/painel/home']">
+      <img src="./assets/images/logo_logame.png" height="40px" />
+    </a>
+  </div>
+
+  <div class="ml-md-auto"></div>
+
+
+
+  <div class="header-part-right" *ngIf="user">
+
+    <div ngbDropdown [placement]="'bottom-right'" class="user col">
+      <span id="userDropdown" ngbDropdownToggle alt="">
+        <span class="material-symbols-rounded">
+          person
+        </span>
+        <span class="name-user">Olá, {{ user?.name }}</span>
+        <span class="material-symbols-rounded">
+          arrow_drop_down
+        </span>
+      </span>
+      <div ngbDropdownMenu aria-labelledby="userDropdown" class="header-account-dropdown">
+        <a (click)="openDialogUser()" class="dropdown-item">
+          <span class="material-symbols-rounded">
+            account_circle
+          </span>
+          Meu perfil
+        </a>
+        <a (click)="signout()" class="dropdown-item">
+          <span class="material-symbols-rounded">
+            logout
+          </span>
+          Sair
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

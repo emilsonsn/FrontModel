@@ -1,0 +1,66 @@
+<nav id="sidebar" [ngClass]="{
+  active: sidebarService.active,
+  'toggle-sidebar': sidebarService.minSidebar
+}">
+  <div [ngStyle]="{'padding': !sidebarService.minSidebar ? '0 15px' : '0' }">
+    <ul class="list-unstyled components mb-5" *ngIf="!sidebarService.minSidebar">
+      <li routerLinkActive="active" [ngClass]="{ 'dropdown-active': item.dropdown }" *ngFor="let item of itemsMenu">
+        <ng-container *ngIf="item.type === 'link'">
+          <a [routerLink]="[item.link]" routerLinkActive="active">
+            <span class="material-symbols-rounded">
+              {{item.icon}}
+            </span>
+            <span class="ms-2">{{ item.label }}</span>
+          </a>
+        </ng-container>
+        <ng-container *ngIf="item.type === 'dropdown'">
+          <a data-toggle="collapse" (click)="setActiveMenu(item)" [attr.aria-expanded]="item.dropdown">
+            <span class="material-symbols-rounded">
+              {{item.icon}}
+            </span>
+            <span class="ms-2">{{ item.label }}</span>
+            <span class="material-symbols-rounded">
+              arrow_drop_down
+            </span>
+          </a>
+          <ul class="collapse list-unstyled" [ngClass]="{ show: item.dropdown }">
+            <li *ngFor="let children of item.children">
+              <a [routerLink]="[children.link]" routerLinkActive="active">{{ children.label }}</a>
+            </li>
+          </ul>
+        </ng-container>
+      </li>
+    </ul>
+    <ul class="list-unstyled components mb-5" *ngIf="sidebarService.minSidebar">
+      <li routerLinkActive="active" *ngFor="let item of itemsMenu">
+        <a *ngIf="item.type === 'link'" class="justify-content-center" [routerLink]="[item.link]"
+          routerLinkActive="active" [title]="item.label">
+          <!-- <span class="material-icons">
+            {{item.icon}}
+          </span> -->
+          <span class="material-symbols-rounded">
+            {{item.icon}}
+          </span>
+        </a>
+      </li>
+    </ul>
+
+    <ul class="list-unstyled components ul-toggle-sidebar" *ngIf="isMobile">
+      <li *ngIf="!sidebarService.minSidebar">
+        <a (click)="toggleSidebar()" role="button">
+          <span class="material-icons">
+            chevron_left
+          </span>
+          Recolher menu
+        </a>
+      </li>
+      <li *ngIf="sidebarService.minSidebar">
+        <a (click)="toggleSidebar()" class="justify-content-center" role="button">
+          <span class="material-icons">
+            chevron_right
+          </span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>

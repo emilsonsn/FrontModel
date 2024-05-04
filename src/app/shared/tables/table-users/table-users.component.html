@@ -1,0 +1,64 @@
+<table class="table table-responsive">
+  <thead>
+    <th *ngFor="let col of columns" [class.hasorder]="col.order" [ngStyle]="{'text-align': col.align}"
+      [class.active-order]="pageControl.orderField === col.slug" (click)="onClickOrderBy(col.slug, col.order)">
+      <div class="{{pageControl.orderField === col.slug ? 'th '+col.align : ''}}">
+        {{ col.title }}
+        <i class="material-icons" *ngIf="pageControl.orderField === col.slug">
+          {{ pageControl.order === 'DESC' ? 'arrow_downward' : 'arrow_upward' }}
+        </i>
+      </div>
+    </th>
+  </thead>
+  <tbody>
+    <tr *ngIf="loading">
+      <td [attr.colspan]="columns.length + 1">
+        <div class="loader-bubble loader-bubble-primary d-block"></div>
+      </td>
+    </tr>
+    <ng-container *ngIf="!loading">
+      <tr *ngIf="!users.length">
+        <td [attr.colspan]="columns.length + 1" class="text-center">
+          <div>Nenhum resultado encontrado</div>
+        </td>
+      </tr>
+      <ng-container *ngFor="let user of users">
+        <tr class="table-line-hover" style="outline: none; cursor: pointer;" (click)="onUserClick.emit(user)">
+          <td>
+            <div>
+              {{user?.id}}
+            </div>
+          </td>
+          <td>
+            <div class="text-center">
+              {{user?.name}}
+            </div>
+          </td>
+          <td>
+            <div class="text-center">
+              {{user?.email}}
+            </div>
+          </td>
+          <td>
+            <div class="text-center">
+              {{user?.group}}
+            </div>
+          </td>
+          <td>
+            <div class="text-center">
+              <button mat-icon-button (click)="onDeleteUserClick.emit(user?.id); $event.stopPropagation()">
+                <span class="material-symbols-rounded">
+                  delete
+                </span>
+              </button>
+            </div>
+          </td>
+          <td>
+        </tr>
+      </ng-container>
+    </ng-container>
+
+  </tbody>
+</table>
+<mat-paginator [length]="pageControl.itemCount" [pageIndex]="pageControl.page - 1" [pageSizeOptions]="[10, 25, 50, 100]"
+  [pageSize]="pageControl.take" (page)="pageEvent($event)"></mat-paginator>

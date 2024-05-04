@@ -1,0 +1,62 @@
+<div class="container-fluid vh-100 bg-login pt-5"
+  style="background-image: url('assets/images/session/background-login.png');">
+  <div class="row">
+    <div class="col-auto mx-auto mt-5">
+      <a [routerLink]="['/']">
+        <img src="./assets/images/logo_logame.png" class="logo" height="40px" />
+      </a>
+    </div>
+  </div>
+  <div class="row mt-5"
+    [@animate]="{ value: '*', params: { y: '120px', opacity: '0', delay: '100ms', duration: '400ms' } }">
+    <div class="col-12 d-flex align-items-center justify-content-center">
+      <div class="login-container mt-md-5 mt-0">
+        <mat-card class="p-4">
+          <form [formGroup]="form" (submit)="login(form)">
+            <div class="row">
+              <div class="row">
+                <div class="col-12 text-center title mb-3">
+                  Login
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-12">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Email</mat-label>
+                    <input type="email" formControlName="email" matInput placeholder="Ex. exemplo@examplo.com">
+                  </mat-form-field>
+                </div>
+                <div class="col-12">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Senha</mat-label>
+                    <input [type]="showPassword ? 'text' : 'password'" formControlName="password" matInput>
+                    <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
+                      <mat-icon>{{ showPassword ? 'visibility' : 'visibility_off'}}</mat-icon>
+                    </button>
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="row justify-content-end">
+                <!-- <div class="col-6 text-start">
+                  <mat-checkbox color="primary" formControlName="rememberMe">Manter logado</mat-checkbox>
+                </div> -->
+                <div class="col-6 text-end forgot">
+                  <a (click)="forgotPassword()">Esqueceu sua senha?</a>
+                </div>
+              </div>
+              <div class="row justify-content-end">
+                <div class="col-auto mt-3 login-btn">
+                  <button type="submit" mat-flat-button color="primary">Entrar</button>
+                </div>
+                <!-- <div class="col-12 text-center sign-up mt-3">
+                  Não possui uma conta?
+                  <a (click)="signup()">Cadastre-se</a>
+                </div> -->
+              </div>
+            </div>
+          </form>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div>

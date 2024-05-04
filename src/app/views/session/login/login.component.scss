@@ -1,0 +1,35 @@
+@import '_variables';
+
+.bg-login {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.login-container {
+  max-width: 500px;
+
+  .title {
+    line-height: 32px;
+    font-size: 24px;
+    font-weight: 400;
+    color: $dark;
+  }
+
+  .forgot,
+  .sign-up {
+    a {
+      color: $dark;
+      font-weight: 700;
+    }
+  }
+
+  .login-btn {
+    button {
+      // background-color: $primary;
+      // color: $white;
+      min-width: 150px;
+      height: 40px;
+    }
+  }
+}

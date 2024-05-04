@@ -1,0 +1,304 @@
+@import '_variables';
+
+#main-header {
+	top: 0;
+	position: fixed;
+	width: 100%;
+	height: $topbar-height;
+	box-shadow: 0 1px 15px rgba(0, 0, 0, 0.04), 0 1px 6px rgba(0, 0, 0, 0.04);
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	background: $primary;
+	color: $white;
+	z-index: 100;
+
+	.menu-toggle {
+		width: 28px;
+		display: none;
+		flex-direction: column;
+		align-items: center;
+		cursor: pointer;
+		margin-left: 20px;
+
+		div {
+			width: 24px;
+			height: 1px;
+			background: $white;
+			margin: 3px 0;
+		}
+	}
+
+	.logo {
+		width: $sidebar-width;
+		margin-left: 62px;
+	}
+
+	.header-icon {
+		font-size: 19px;
+		vertical-align: middle;
+		cursor: pointer;
+		height: 36px;
+		width: 36px;
+		line-height: 36px;
+		display: inline-block;
+		text-align: center;
+		border-radius: 8px;
+		margin: 0 2px;
+
+		&.dropdown-toggle {
+			&:after {
+				display: none;
+			}
+		}
+	}
+
+	.header-part-right {
+		display: flex;
+		align-items: center;
+
+		div[aria-labelledby="notificationDropdown"].show{
+			max-height: 1000px !important;
+		}
+
+		.user {
+			margin-right: 2rem;
+
+			#userDropdown {
+				display: flex;
+				justify-content: center;
+				align-items: center !important;
+
+				.name-user {
+					margin-top: 5px;
+				}
+
+				.material-symbols-rounded {
+					font-size: 25px;
+					margin-right: 10px;
+				}
+			}
+
+			img {
+				width: 36px;
+				height: 36px;
+				border-radius: 50%;
+			}
+		}
+
+		&.buttons {
+			margin-right: 8em;
+		}
+
+		.btn {
+			font-size: 10px;
+			font-weight: bold;
+			font-style: normal;
+			font-stretch: normal;
+			line-height: 2;
+			letter-spacing: normal;
+			text-align: center;
+		}
+
+		.btn-secondary {
+			border: solid 1px #ffffff;
+			background: #404040;
+			color: #ffffff;
+		}
+
+		.btn-primary {
+			background-color: #ffffff;
+			color: $primary;
+		}
+	}
+
+	.notification-dropdown {
+		padding: 0;
+		max-height: 260px;
+		top: 5px !important;
+		min-width: 300px;
+		max-width: 300px;
+		cursor: pointer;
+
+		.dropdown-item {
+			align-items: center;
+			padding: 0;
+			min-height: 72px;
+			border-bottom: 1px solid $gray-300;
+
+			.notification-icon {
+				background: $gray-200;
+				height: 100%;
+				width: 44px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+
+				i {
+					font-size: 18px;
+				}
+			}
+
+			.notification-details {
+				padding: 0.25rem 0.75rem;
+			}
+
+			&:active {
+				color: inherit;
+				background: inherit;
+			}
+		}
+	}
+
+	.header-account-dropdown {
+		top: 25px !important;
+		width: 210px;
+
+		&::before {
+			position: absolute;
+			top: -10px;
+			right: 20px;
+			display: inline-block;
+			border-right: 15px solid transparent;
+			border-bottom: 15px solid white;
+			border-left: 15px solid transparent;
+			content: '';
+		}
+
+		.dropdown-item {
+			display: flex;
+			align-items: center;
+
+			span {
+				margin: 3px 10px 0 0;
+			}
+		}
+
+		a {
+			font-size: 14px;
+			font-weight: normal;
+			font-style: normal;
+			font-stretch: normal;
+			line-height: 1.5;
+			letter-spacing: normal;
+			color: #a1a1a1;
+
+			i {
+				vertical-align: middle;
+				color: $primary;
+				font-size: 16px;
+				font-weight: normal;
+				font-stretch: normal;
+				font-style: normal;
+				line-height: normal;
+				letter-spacing: normal;
+				text-align: center;
+				margin-right: 8px;
+			}
+		}
+	}
+}
+
+.dropdown-toggle {
+	cursor: pointer;
+
+	&::after {
+		content: none;
+	}
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+	color: $grey1 !important;
+	background-color: #f8f9fa;
+}
+
+@include media-breakpoint-down(md) {
+	#main-header {
+		.menu-toggle {
+			display: flex;
+		}
+	}
+}
+
+@include media-breakpoint-down(sm) {
+	#main-header {
+		#userDropdown {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			.name-user,
+			.fa-angle-down {
+				display: none;
+			}
+		}
+
+		.header-part-right .user {
+			margin-right: 0px;
+		}
+
+		.logo {
+			width: auto;
+			margin: 0 auto;
+		}
+	}
+}
+
+@media (max-width: 320px) {
+	#main-header {
+		.logo {
+			display: none;
+		}
+	}
+}
+
+::ng-deep {
+
+	.mat-mdc-menu-panel {
+		
+		max-height: 500px;
+		
+		.mat-mdc-menu-item-text {	
+			.notification-title {
+				font-size: 0.9rem;
+				font-weight: 500;
+				color: $primary;
+	
+				.type {
+					width: 5px;
+					height: 5px;
+					display: inline-block;
+					border-radius: 100%;
+					margin-right: 10px;
+	
+					&.info {
+						background: $primary;
+					}
+					.alert{
+						background: #e0e010;
+					}
+					.warn{
+						background: #c46466;
+					}
+				}
+			}
+		}
+
+		.viewAll{
+			background: $primary;
+			color: white;
+			display: block;
+			font-size: 0.9rem;
+			text-align: center;
+			margin: 0 auto;
+			cursor: pointer;
+		}
+	
+		.notification-description {
+			font-size: 0.8rem;
+		}
+	}
+	
+}
